@@ -89,7 +89,6 @@ namespace HealbotConfigurator2
       this.btn_ClearBuffs = new MetroSet_UI.Controls.MetroSetLink();
       this.btn_ClearMonitorsIgnores = new MetroSet_UI.Controls.MetroSetLink();
       this.cb_WaitFor = new System.Windows.Forms.ComboBox();
-      this.cb_WeaponskillHpOperator = new System.Windows.Forms.ComboBox();
       this.cb_Weaponskill = new System.Windows.Forms.ComboBox();
       this.lbl_WaitForToggle = new MetroSet_UI.Controls.MetroSetLabel();
       this.num_WeaponskillHpPercent = new System.Windows.Forms.NumericUpDown();
@@ -107,6 +106,7 @@ namespace HealbotConfigurator2
       this.cb_SelectCharacter = new System.Windows.Forms.ComboBox();
       this.img_Warning = new FontAwesome.Sharp.IconPictureBox();
       this.lbl_Warning = new System.Windows.Forms.Label();
+      this.cb_WeaponskillHpOperator = new System.Windows.Forms.ComboBox();
       this.panel_Toggles.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.num_FollowDistance)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.num_MinCuraga)).BeginInit();
@@ -192,6 +192,7 @@ namespace HealbotConfigurator2
             0,
             0,
             0});
+      this.num_FollowDistance.ValueChanged += new System.EventHandler(this.num_FollowDistance_ValueChanged);
       // 
       // toggle_Spam
       // 
@@ -255,6 +256,7 @@ namespace HealbotConfigurator2
             0,
             0,
             0});
+      this.num_MinCuraga.ValueChanged += new System.EventHandler(this.num_MinCuraga_ValueChanged);
       // 
       // cb_Follow
       // 
@@ -296,6 +298,7 @@ namespace HealbotConfigurator2
             0,
             0,
             0});
+      this.num_MinCure.ValueChanged += new System.EventHandler(this.num_MinCure_ValueChanged);
       // 
       // toggle_Follow
       // 
@@ -809,17 +812,17 @@ namespace HealbotConfigurator2
       this.btn_HealbotRefresh.DisabledBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(120)))), ((int)(((byte)(65)))), ((int)(((byte)(177)))), ((int)(((byte)(225)))));
       this.btn_HealbotRefresh.DisabledForeColor = System.Drawing.Color.Gray;
       this.btn_HealbotRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-      this.btn_HealbotRefresh.HoverBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(219)))), ((int)(((byte)(150)))), ((int)(((byte)(184)))));
-      this.btn_HealbotRefresh.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(219)))), ((int)(((byte)(150)))), ((int)(((byte)(184)))));
+      this.btn_HealbotRefresh.HoverBorderColor = System.Drawing.Color.SkyBlue;
+      this.btn_HealbotRefresh.HoverColor = System.Drawing.Color.SkyBlue;
       this.btn_HealbotRefresh.HoverTextColor = System.Drawing.Color.White;
       this.btn_HealbotRefresh.IsDerivedStyle = false;
-      this.btn_HealbotRefresh.Location = new System.Drawing.Point(269, 45);
+      this.btn_HealbotRefresh.Location = new System.Drawing.Point(381, 45);
       this.btn_HealbotRefresh.Name = "btn_HealbotRefresh";
-      this.btn_HealbotRefresh.NormalBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(129)))), ((int)(((byte)(159)))));
-      this.btn_HealbotRefresh.NormalColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(129)))), ((int)(((byte)(159)))));
+      this.btn_HealbotRefresh.NormalBorderColor = System.Drawing.Color.LightSkyBlue;
+      this.btn_HealbotRefresh.NormalColor = System.Drawing.Color.LightSkyBlue;
       this.btn_HealbotRefresh.NormalTextColor = System.Drawing.Color.White;
-      this.btn_HealbotRefresh.PressBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(129)))), ((int)(((byte)(159)))));
-      this.btn_HealbotRefresh.PressColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(129)))), ((int)(((byte)(159)))));
+      this.btn_HealbotRefresh.PressBorderColor = System.Drawing.Color.LightSkyBlue;
+      this.btn_HealbotRefresh.PressColor = System.Drawing.Color.LightSkyBlue;
       this.btn_HealbotRefresh.PressTextColor = System.Drawing.Color.White;
       this.btn_HealbotRefresh.Size = new System.Drawing.Size(75, 23);
       this.btn_HealbotRefresh.Style = MetroSet_UI.Enums.Style.Light;
@@ -1190,7 +1193,7 @@ namespace HealbotConfigurator2
       this.btn_HealbotLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
       this.btn_HealbotLoad.IsDerivedStyle = true;
       this.btn_HealbotLoad.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-      this.btn_HealbotLoad.Location = new System.Drawing.Point(359, 46);
+      this.btn_HealbotLoad.Location = new System.Drawing.Point(271, 46);
       this.btn_HealbotLoad.Name = "btn_HealbotLoad";
       this.btn_HealbotLoad.Size = new System.Drawing.Size(40, 23);
       this.btn_HealbotLoad.Style = MetroSet_UI.Enums.Style.Dark;
@@ -1210,7 +1213,7 @@ namespace HealbotConfigurator2
       this.btn_HealbotUnload.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
       this.btn_HealbotUnload.IsDerivedStyle = true;
       this.btn_HealbotUnload.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-      this.btn_HealbotUnload.Location = new System.Drawing.Point(403, 46);
+      this.btn_HealbotUnload.Location = new System.Drawing.Point(315, 46);
       this.btn_HealbotUnload.Name = "btn_HealbotUnload";
       this.btn_HealbotUnload.Size = new System.Drawing.Size(54, 23);
       this.btn_HealbotUnload.Style = MetroSet_UI.Enums.Style.Dark;
@@ -1356,15 +1359,6 @@ namespace HealbotConfigurator2
       this.cb_WaitFor.TabIndex = 30;
       this.cb_WaitFor.SelectedIndexChanged += new System.EventHandler(this.cb_Feature_SelectedIndexChanged);
       // 
-      // cb_WeaponskillHpOperator
-      // 
-      this.cb_WeaponskillHpOperator.FormattingEnabled = true;
-      this.cb_WeaponskillHpOperator.Location = new System.Drawing.Point(229, 29);
-      this.cb_WeaponskillHpOperator.Name = "cb_WeaponskillHpOperator";
-      this.cb_WeaponskillHpOperator.Size = new System.Drawing.Size(52, 24);
-      this.cb_WeaponskillHpOperator.TabIndex = 31;
-      this.cb_WeaponskillHpOperator.SelectedIndexChanged += new System.EventHandler(this.cb_Feature_SelectedIndexChanged);
-      // 
       // cb_Weaponskill
       // 
       this.cb_Weaponskill.FormattingEnabled = true;
@@ -1391,7 +1385,7 @@ namespace HealbotConfigurator2
       // 
       // num_WeaponskillHpPercent
       // 
-      this.num_WeaponskillHpPercent.Location = new System.Drawing.Point(283, 30);
+      this.num_WeaponskillHpPercent.Location = new System.Drawing.Point(283, 31);
       this.num_WeaponskillHpPercent.Minimum = new decimal(new int[] {
             1,
             0,
@@ -1405,12 +1399,13 @@ namespace HealbotConfigurator2
             0,
             0,
             0});
+      this.num_WeaponskillHpPercent.ValueChanged += new System.EventHandler(this.num_WeaponskillHpPercent_ValueChanged);
       // 
       // metroSetLabel11
       // 
       this.metroSetLabel11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
       this.metroSetLabel11.IsDerivedStyle = true;
-      this.metroSetLabel11.Location = new System.Drawing.Point(182, 29);
+      this.metroSetLabel11.Location = new System.Drawing.Point(182, 30);
       this.metroSetLabel11.Name = "metroSetLabel11";
       this.metroSetLabel11.Size = new System.Drawing.Size(46, 22);
       this.metroSetLabel11.Style = MetroSet_UI.Enums.Style.Light;
@@ -1437,6 +1432,11 @@ namespace HealbotConfigurator2
       // 
       // num_WaitFor
       // 
+      this.num_WaitFor.Increment = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
       this.num_WaitFor.Location = new System.Drawing.Point(290, 61);
       this.num_WaitFor.Maximum = new decimal(new int[] {
             3000,
@@ -1444,7 +1444,7 @@ namespace HealbotConfigurator2
             0,
             0});
       this.num_WaitFor.Minimum = new decimal(new int[] {
-            1000,
+            1,
             0,
             0,
             0});
@@ -1452,10 +1452,11 @@ namespace HealbotConfigurator2
       this.num_WaitFor.Size = new System.Drawing.Size(52, 22);
       this.num_WaitFor.TabIndex = 18;
       this.num_WaitFor.Value = new decimal(new int[] {
-            1000,
+            800,
             0,
             0,
             0});
+      this.num_WaitFor.ValueChanged += new System.EventHandler(this.num_WaitFor_ValueChanged);
       // 
       // metroSetLabel13
       // 
@@ -1571,7 +1572,7 @@ namespace HealbotConfigurator2
       // 
       this.metroSetLabel17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
       this.metroSetLabel17.IsDerivedStyle = true;
-      this.metroSetLabel17.Location = new System.Drawing.Point(330, 29);
+      this.metroSetLabel17.Location = new System.Drawing.Point(330, 30);
       this.metroSetLabel17.Name = "metroSetLabel17";
       this.metroSetLabel17.Size = new System.Drawing.Size(18, 22);
       this.metroSetLabel17.Style = MetroSet_UI.Enums.Style.Light;
@@ -1587,6 +1588,7 @@ namespace HealbotConfigurator2
       this.panel_Combat.BackgroundColor = System.Drawing.Color.White;
       this.panel_Combat.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
       this.panel_Combat.BorderThickness = 1;
+      this.panel_Combat.Controls.Add(this.cb_WeaponskillHpOperator);
       this.panel_Combat.Controls.Add(this.lbl_WaitForToggle);
       this.panel_Combat.Controls.Add(this.toggle_WaitFor);
       this.panel_Combat.Controls.Add(this.cb_Weaponskill);
@@ -1598,7 +1600,6 @@ namespace HealbotConfigurator2
       this.panel_Combat.Controls.Add(this.num_WeaponskillHpPercent);
       this.panel_Combat.Controls.Add(this.num_WaitFor);
       this.panel_Combat.Controls.Add(this.toggle_Attack);
-      this.panel_Combat.Controls.Add(this.cb_WeaponskillHpOperator);
       this.panel_Combat.Controls.Add(this.toggle_Weaponskill);
       this.panel_Combat.Controls.Add(this.lbl_WeaponskillToggle);
       this.panel_Combat.IsDerivedStyle = true;
@@ -1650,6 +1651,15 @@ namespace HealbotConfigurator2
       this.lbl_Warning.Text = "NOT RUNNING AS ADMIN";
       this.lbl_Warning.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       this.lbl_Warning.Visible = false;
+      // 
+      // cb_WeaponskillHpOperator
+      // 
+      this.cb_WeaponskillHpOperator.FormattingEnabled = true;
+      this.cb_WeaponskillHpOperator.Location = new System.Drawing.Point(234, 30);
+      this.cb_WeaponskillHpOperator.Name = "cb_WeaponskillHpOperator";
+      this.cb_WeaponskillHpOperator.Size = new System.Drawing.Size(43, 24);
+      this.cb_WeaponskillHpOperator.TabIndex = 38;
+      this.cb_WeaponskillHpOperator.SelectedIndexChanged += new System.EventHandler(this.cb_Feature_SelectedIndexChanged);
       // 
       // MainForm
       // 
@@ -1752,7 +1762,6 @@ namespace HealbotConfigurator2
     private System.Windows.Forms.ComboBox cb_Follow;
     private System.Windows.Forms.ComboBox cb_Spam;
     private System.Windows.Forms.ComboBox cb_WaitFor;
-    private System.Windows.Forms.ComboBox cb_WeaponskillHpOperator;
     private System.Windows.Forms.ComboBox cb_Weaponskill;
     private System.Windows.Forms.ComboBox cb_Assist;
     private MetroSet_UI.Controls.MetroSetPanel metroSetPanel7;
@@ -1784,6 +1793,7 @@ namespace HealbotConfigurator2
     private MetroSet_UI.Controls.MetroSetLink btn_PotencyPriority;
     private FontAwesome.Sharp.IconPictureBox img_Warning;
     private System.Windows.Forms.Label lbl_Warning;
+    private System.Windows.Forms.ComboBox cb_WeaponskillHpOperator;
   }
 }
 

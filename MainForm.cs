@@ -19,7 +19,6 @@ namespace HealbotConfigurator2
 {
   public partial class MainForm : MetroSetForm
   {
-    public readonly bool Debugging = true;
     public readonly string GlobalSettingsFile = "globalsettings.json";
     public readonly string DefaultSettingsFile = "defaultsettings.json";
 
@@ -80,6 +79,9 @@ namespace HealbotConfigurator2
 
       _GlobalSettings = new GlobalSettings();
       _Settings = new Settings();
+
+      if (!File.Exists(DefaultSettingsFile))
+        SaveSettings(DefaultSettingsFile);
     }
 
     #region UI Related Events
@@ -193,15 +195,28 @@ namespace HealbotConfigurator2
 
     private void btn_SaveSettings_Click(object sender, EventArgs e)
     {
+      // Update Settings lists with current values
+      _Settings.Buffs.Clear();
+      _Settings.Debuffs.Clear();
+      _Settings.MonitorsIgnores.Clear();
+
+      _Settings.Buffs.AddRange(lb_Buffs.Items.Select(x => x.ToString().Replace("→ ", "")).ToList());
+      _Settings.Debuffs.AddRange(lb_Debuff.Items.Select(x => x.ToString()).ToList());
+      _Settings.MonitorsIgnores.AddRange(lb_MonitorsIgnores.Items.Select(x => x.ToString()).ToList());
+
+      var mainjob = _Resources.Jobs.Where(x => x.Id == _ELITEAPI.Player.MainJob).FirstOrDefault().Name;
+      var subjob = _Resources.Jobs.Where(x => x.Id == _ELITEAPI.Player.SubJob).FirstOrDefault().Name;
+
       var sfd = new SaveFileDialog
       {
         AddExtension = true,
         Filter = "Json File|*.json",
         Title = "Save configurator settings.",
-        CheckFileExists = true,
-        FileName = $"{_ELITEAPI.Player.Name}_{_ELITEAPI.Player.MainJob}_{_ELITEAPI.Player.SubJob}.json"
+        FileName = $"{_ELITEAPI.Player.Name}_{mainjob}_{subjob}.json"
       };
-      sfd.ShowDialog();
+
+      if (sfd.ShowDialog() == DialogResult.Cancel)
+        return;
 
       if (!string.IsNullOrEmpty(sfd.FileName))
       {
@@ -211,8 +226,6 @@ namespace HealbotConfigurator2
 
     private void btn_LoadSettings_Click(object sender, EventArgs e)
     {
-      var successful = false;
-      var filename = "";
       using (OpenFileDialog ofd = new OpenFileDialog())
       {
         ofd.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -220,19 +233,19 @@ namespace HealbotConfigurator2
         ofd.RestoreDirectory = true;
         ofd.Title = "Load configurator setting.";
 
-        if (ofd.ShowDialog() == DialogResult.OK)
+        if (ofd.ShowDialog() == DialogResult.Cancel)
+          return;
+        
+        if (!string.IsNullOrEmpty(ofd.FileName))
         {
-          if (!string.IsNullOrEmpty(ofd.FileName) && !ofd.FileName.Contains("globalsettings"))
+          var filename = ofd.FileName;
+          if (filename.Contains("globalsettings"))
           {
-            LoadSettings(ofd.FileName);
-            successful = true;
-            filename = ofd.FileName;
+            MetroSetMessageBox.Show(this, $"Invalid config file: {filename}", " E R R O R ");
+            return;
           }
+          LoadSettings(filename);
         }
-      }
-      if (!successful)
-      {
-        MetroSetMessageBox.Show(this, "Unable to load config file: " + filename);
       }
     }
 
@@ -263,17 +276,11 @@ namespace HealbotConfigurator2
 
     private void btn_HealbotLoad_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
     {
-      if (_ELITEAPI == null)
-        return;
-
       SendCommand("lua load healbot");
     }
 
     private void btn_HealbotUnload_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
     {
-      if (_ELITEAPI == null)
-        return;
-
       SendCommand("lua unload healbot");
     }
 
@@ -294,45 +301,55 @@ namespace HealbotConfigurator2
         cb = (ComboBox)sender;
 
       var feature = cb.Name.Split('_').Count() > 1 ? cb.Name.Split('_')[1] : string.Empty;
+      feature = feature.ToLower();
       if (string.IsNullOrWhiteSpace(feature))
         return;
-      feature = feature.ToLower();
-
+      
       var cbText = !string.IsNullOrEmpty(cb.Text) ? cb.Text : cb.SelectedItem != null ? ((ComboboxItem)cb.SelectedItem).Text : string.Empty;
-      if (feature == "weaponskill" && !string.IsNullOrWhiteSpace(cbText))
+      if (string.IsNullOrWhiteSpace(cbText))
+        return;
+
+      if (feature == "weaponskill")
       {
         feature = "ws";
+        _Settings.Weaponskill = cbText;
         SendCommand($"hb {feature} use {cbText}");
         return;
       }
 
-      if (feature == "weaponskillhpoperator" && !string.IsNullOrWhiteSpace(cbText))
+      if (feature == "weaponskillhpoperator")
       {
         feature = "ws";
-        SendCommand($"hb {feature} hp {cbText} {num_WeaponskillHpPercent.Value}");
+        _Settings.WeaponskillHpOperator = cbText;
+        SendCommand($"hb {feature} hp {cbText.Trim()} {num_WeaponskillHpPercent.Value}");
         return;
       }
 
-      if (feature == "waitfor" && toggle_WaitFor.Switched && !string.IsNullOrWhiteSpace(cbText))
+      if (feature == "waitfor" && toggle_WaitFor.Switched)
       {
+        _Settings.WaitForPlayer = cbText;
+        _Settings.WaitForTp = (int)num_WaitFor.Value;
         SendCommand($"hb ws {feature} {cbText} {num_WaitFor.Value}");
         return;
       }
 
-      if (feature == "assist" && toggle_Assist.Switched && !string.IsNullOrWhiteSpace(cbText) && cbText.ToLower() != _ELITEAPI.Player.Name.ToLower())
+      if (feature == "assist" && toggle_Assist.Switched && cbText.ToLower() != _ELITEAPI.Player.Name.ToLower())
       {
+        _Settings.AssistPlayer = cbText;
         SendCommand($"hb {feature} {cbText}");
         return;
       }
 
-      if (feature == "follow" && toggle_Follow.Switched && !string.IsNullOrWhiteSpace(cbText) && cbText.ToLower() != _ELITEAPI.Player.Name.ToLower())
+      if (feature == "follow" && toggle_Follow.Switched && cbText.ToLower() != _ELITEAPI.Player.Name.ToLower())
       {
+        _Settings.FollowPlayer = cbText;
         SendCommand($"hb {feature} {cbText}");
         return;
       }
 
-      if (feature == "spam" && toggle_Follow.Switched && !string.IsNullOrWhiteSpace(cbText))
+      if (feature == "spam" && toggle_Follow.Switched)
       {
+        _Settings.SpamSpell = cbText;
         SendCommand($"hb {feature} {cbText}");
         return;
       }
@@ -471,6 +488,53 @@ namespace HealbotConfigurator2
       potencyPrioritiesForm.ShowDialog();
     }
 
+    private void btn_HealbotOff_Click(object sender, EventArgs e)
+    {
+      SendCommand("hb off");
+    }
+
+    private void btn_HealbotOn_Click(object sender, EventArgs e)
+    {
+      SendCommand("hb on");
+    }
+
+    private void num_MinCure_ValueChanged(object sender, EventArgs e)
+    {
+      _Settings.MinCuraga = (int)num_MinCure.Value;
+      SendCommand($"hb mincure {num_MinCure.Value}");
+    }
+
+    private void num_MinCuraga_ValueChanged(object sender, EventArgs e)
+    {
+      _Settings.MinCuraga = (int)num_MinCuraga.Value;
+      SendCommand($"hb mincuraga {num_MinCuraga.Value}");
+    }
+
+    private void num_FollowDistance_ValueChanged(object sender, EventArgs e)
+    {
+      _Settings.FollowDistance = (int)num_FollowDistance.Value;
+      SendCommand($"hb follow distance {num_FollowDistance.Value}");
+    }
+
+    private void num_WeaponskillHpPercent_ValueChanged(object sender, EventArgs e)
+    {
+      _Settings.WeaponskillHpPercent = (int)num_WeaponskillHpPercent.Value;
+
+      var hpOperator = !string.IsNullOrEmpty(cb_WeaponskillHpOperator.Text) ? cb_WeaponskillHpOperator.Text : cb_WeaponskillHpOperator.SelectedItem != null ? ((ComboboxItem)cb_WeaponskillHpOperator.SelectedItem).Text : string.Empty;
+      if (string.IsNullOrEmpty(hpOperator))
+        return;
+      SendCommand($"hb ws hp {hpOperator} {num_WeaponskillHpPercent}");
+    }
+
+    private void num_WaitFor_ValueChanged(object sender, EventArgs e)
+    {
+      _Settings.WaitForTp = (int)num_WaitFor.Value;
+
+      var player = !string.IsNullOrEmpty(cb_WaitFor.Text) ? cb_WaitFor.Text : cb_WaitFor.SelectedItem != null ? ((ComboboxItem)cb_WaitFor.SelectedItem).Text : string.Empty;
+      if (string.IsNullOrEmpty(player))
+        return;
+      SendCommand($"hb ws waitfor {player} {num_WaitFor.Value}");
+    }
     #endregion
 
     private void Init()
@@ -489,10 +553,7 @@ namespace HealbotConfigurator2
       cb_BuffPlayer.Items.Add(EmptyComboboxItem);
       cb_Assist.Items.Add(EmptyComboboxItem);
       cb_WaitFor.Items.Add(EmptyComboboxItem);
-
-      cb_WeaponskillHpOperator.Items.Add(">");
-      cb_WeaponskillHpOperator.Items.Add("<");
-
+      
       if (InitEliteMMOControls())
       {
         LoadGlobalConfig();
@@ -527,17 +588,26 @@ namespace HealbotConfigurator2
 
     private void InitResourceControls()
     {
-      var list = new List<ComboboxItem>();
+      cb_WeaponskillHpOperator.Items.Clear();
+      cb_Spam.Items.Clear();
+      cb_Weaponskill.Items.Clear();
+      cb_BuffSpell.Items.Clear();
+      cb_DebuffSpell.Items.Clear();
+
+      var list = new List<ComboboxItem> {EmptyComboboxItem, new ComboboxItem { Text = " > ", Value = ">" }, new ComboboxItem { Text = " < ", Value = "<" } };
+      cb_WeaponskillHpOperator.Items.AddRange(list.ToArray());
+
+      list = new List<ComboboxItem>() { EmptyComboboxItem };
       foreach(var item in _Resources.Spells)
         list.Add(new ComboboxItem { Text = item.Name, Value = item.Id });
       cb_Spam.Items.AddRange(list.ToArray());
 
-      list = new List<ComboboxItem>();
+      list = new List<ComboboxItem>() { EmptyComboboxItem };
       foreach (var item in _Resources.Weaponskills)
         list.Add(new ComboboxItem { Text = item.Name, Value = item.Id });
       cb_Weaponskill.Items.AddRange(list.ToArray());
-
-      list = new List<ComboboxItem>();
+      
+      list = new List<ComboboxItem>() { EmptyComboboxItem };
       foreach (var item in _Resources.BuffSpells)
         list.Add(new ComboboxItem { Text = item.Name, Value = item.Id });
       cb_BuffSpell.Items.AddRange(list.ToArray());
@@ -569,12 +639,14 @@ namespace HealbotConfigurator2
 
     private void LoadSettingsByJob()
     {
-      var settingsfile = _ELITEAPI != null ? $"{_ELITEAPI.Player.Name}_{_ELITEAPI.Player.MainJob}_{_ELITEAPI.Player.SubJob}.json" : "";
+      var mainjob = _Resources.Jobs.Where(x => x.Id == _ELITEAPI.Player.MainJob).FirstOrDefault();
+      var subjob = _Resources.Jobs.Where(x => x.Id == _ELITEAPI.Player.SubJob).FirstOrDefault();
+
+      var settingsfile = _ELITEAPI != null ? $"{_ELITEAPI.Player.Name}_{mainjob.Name}_{subjob.Name}.json" : "";
       if (string.IsNullOrEmpty(settingsfile) || !File.Exists(settingsfile))
         settingsfile = DefaultSettingsFile;
 
       _Settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsfile));
-
       InitSettingsControls();
     }
 
@@ -606,8 +678,21 @@ namespace HealbotConfigurator2
       cb_WaitFor.Text = _Settings.WaitForPlayer;
       cb_WeaponskillHpOperator.Text = _Settings.WeaponskillHpOperator;
 
+
+      lb_Buffs.Items.Clear();
+      lb_Debuff.Items.Clear();
+      lb_MonitorsIgnores.Items.Clear();
+
+      foreach (var item in _Settings.Buffs)
+        SendCommand($"hb buff {item}");
       lb_Buffs.AddItems(_Settings.Buffs.ToArray());
+
+      foreach (var item in _Settings.Debuffs)
+        SendCommand($"hb debuff {item}");
       lb_Debuff.AddItems(_Settings.Debuffs.ToArray());
+
+      foreach (var item in _Settings.MonitorsIgnores)
+        SendCommand($"hb {item}");
       lb_MonitorsIgnores.AddItems(_Settings.MonitorsIgnores.ToArray());
     }
 
@@ -644,7 +729,7 @@ namespace HealbotConfigurator2
       if (_ELITEAPI == null)
         return;
 
-      if (Debugging)
+      if (_GlobalSettings.Debugging)
         _ELITEAPI.ThirdParty.SendString(@"/echo " + cmd);
 
       _ELITEAPI.ThirdParty.SendString(@"//" + cmd);
@@ -655,6 +740,7 @@ namespace HealbotConfigurator2
       var featureCmd = on ? "enable" : "disable";
       if (feature == "ignoretrusts")
       {
+        _Settings.IgnoreTrustsEnabled = on;
         featureCmd = on ? "on" : "off";
         SendCommand($"hb {feature} {featureCmd}");
         return;
@@ -662,55 +748,94 @@ namespace HealbotConfigurator2
       
       if (feature == "follow")
       {
+        _Settings.FollowEnabled = on;
         var player = cb_Follow.SelectedItem != null ? ((ComboboxItem)cb_Follow.SelectedItem).Text : cb_Follow.Text;
         if (on && !string.IsNullOrWhiteSpace(player) && player.ToLower() != _ELITEAPI.Player.Name.ToLower())
-          SendCommand($"hb {feature} {player};hb {feature} distance {num_FollowDistance.Value}");
-        else if (!on)
+        {
+          var followdistance = (int)num_FollowDistance.Value;
+          _Settings.FollowPlayer = player;
+          _Settings.FollowDistance = followdistance;
+          SendCommand($"hb {feature} {player};hb {feature} distance {followdistance}");
+        }
+        else
+        {
+          _Settings.FollowPlayer = string.Empty;
           SendCommand($"hb {feature} off");
+        }
         return;
       }
       
       if (feature == "assist")
       {
+        _Settings.AssistEnabled = on;
         var player = !string.IsNullOrEmpty(cb_Assist.Text) ? cb_Assist.Text : cb_Assist.SelectedItem != null ? ((ComboboxItem)cb_Assist.SelectedItem).Text : string.Empty;
         if (on && !string.IsNullOrWhiteSpace(player) && player.ToLower() != _ELITEAPI.Player.Name.ToLower())
+        {
+          _Settings.AssistPlayer = player;
           SendCommand($"hb {feature} {player}");
+        }
         else if (!on)
-          SendCommand($"hb {feature} off");
+        {
+          _Settings.AssistPlayer = string.Empty;
+          SendCommand($"hb {feature} off"); 
+        }
         return;
       }
       
       if (feature == "spam")
       {
+        _Settings.SpamEnabled = on;
         var spell = !string.IsNullOrEmpty(cb_Spam.Text) ? cb_Spam.Text : cb_Spam.SelectedItem != null ? ((ComboboxItem)cb_Spam.SelectedItem).Text : string.Empty;
         if (on && !string.IsNullOrEmpty(spell))
+        {
+          _Settings.SpamSpell = spell;
           SendCommand($"hb {feature} {spell}");
+        }
         else if (!on)
-          SendCommand($"hb {featureCmd} {feature}");
+        {
+          _Settings.SpamSpell = string.Empty;
+          SendCommand($"hb {featureCmd} {feature}"); 
+        }
         return;
       }
 
       if (feature == "waitfor")
       {
+        _Settings.WaitForEnabled = on;
         var player = !string.IsNullOrEmpty(cb_WaitFor.Text) ? cb_WaitFor.Text : cb_WaitFor.SelectedItem != null ? ((ComboboxItem)cb_WaitFor.SelectedItem).Text : string.Empty;
+        _Settings.WaitForPlayer = player;
+        _Settings.WaitForTp = (int)num_WaitFor.Value;
         if (on && !string.IsNullOrWhiteSpace(player))
+        {
           SendCommand($"hb ws {feature} {player} {num_WaitFor.Value}");
+        }
         else if (!on)
+        {
           SendCommand($"hb ws nopartner");
+        }
         return;
       }
       
       if (feature == "weaponskill")
       {
         feature = "ws";
-        var weaponskill = !string.IsNullOrEmpty(cb_Weaponskill.Text) ? cb_Weaponskill.Text : cb_Weaponskill.SelectedItem != null ? ((ComboboxItem)cb_Weaponskill.SelectedItem).Text : string.Empty;
-        if (!string.IsNullOrEmpty(weaponskill))
-          SendCommand($"hb {feature} use {weaponskill}");
+        _Settings.WeaponskillEnabled = on;
 
-        var hpOperator = (string)cb_WeaponskillHpOperator.SelectedItem;
-        var hpPercent = num_WeaponskillHpPercent.Value;
+        var weaponskill = !string.IsNullOrEmpty(cb_Weaponskill.Text) ? cb_Weaponskill.Text : cb_Weaponskill.SelectedItem != null ? ((ComboboxItem)cb_Weaponskill.SelectedItem).Text : string.Empty;
+        _Settings.Weaponskill = weaponskill;
+        if (!string.IsNullOrEmpty(weaponskill))
+        {
+          SendCommand($"hb {feature} use {weaponskill}");
+        }
+
+        var hpOperator = !string.IsNullOrEmpty(cb_WeaponskillHpOperator.Text) ? cb_WeaponskillHpOperator.Text.Trim() : cb_WeaponskillHpOperator.SelectedItem != null ? ((ComboboxItem)cb_WeaponskillHpOperator.SelectedItem).Text.Trim() : string.Empty;
+        var hpPercent = (int)num_WeaponskillHpPercent.Value;
+        _Settings.WeaponskillHpOperator = $" {hpOperator} ";
+        _Settings.WeaponskillHpPercent = hpPercent;
         if (!string.IsNullOrEmpty(hpOperator))
+        {
           SendCommand($"hb {feature} hp {hpOperator} {hpPercent}");
+        }
 
         SendCommand($"hb {featureCmd} {feature}");
         return;
@@ -718,22 +843,69 @@ namespace HealbotConfigurator2
 
       if (feature == "attack")
       {
+        _Settings.EngageEnabled = on;
         featureCmd = on ? "on" : "off";
         SendCommand($"hb assist {feature} {featureCmd}");
         return;
       }
 
+      if (feature == "cure")
+      {
+        var mincure = (int)num_MinCure.Value;
+        _Settings.CureEnabled = on;
+        _Settings.MinCure = mincure;
+        if (on)
+        {
+          SendCommand($"hb min{feature} {mincure}");
+        }
+
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
+      if (feature == "curaga")
+      {
+        var mincuraga = (int)num_MinCure.Value;
+        _Settings.CuragaEnabled = on;
+        _Settings.MinCuraga = mincuraga;
+        if (on)
+        {
+          SendCommand($"hb min{feature} {mincuraga}");
+        }
+
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
+      if (feature == "na")
+      {
+        _Settings.NaSpellsEnabled = on;
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
+      if (feature == "erase")
+      {
+        _Settings.EraseEnabled = on;
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
+      if (feature == "buffs")
+      {
+        _Settings.BuffsEnabled = on;
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
+      if (feature == "debuffs")
+      {
+        _Settings.DebuffsEnabled = on;
+        SendCommand($"hb {featureCmd} {feature}");
+        return;
+      }
+
       SendCommand($"hb {featureCmd} {feature}");
-    }
-
-    private void btn_HealbotOff_Click(object sender, EventArgs e)
-    {
-      SendCommand("hb off");
-    }
-
-    private void btn_HealbotOn_Click(object sender, EventArgs e)
-    {
-      SendCommand("hb on");
     }
   }
 

@@ -7,7 +7,7 @@ namespace HealbotConfigurator2
     public string WindowerPath { get; set; }
     public bool StartCollapsed { get; set; }
     public bool KeepOnTop { get; set; }
-
+    public bool Debugging { get; set; }
     public GlobalSettings()
     { WindowerPath = string.Empty; }
 
@@ -75,14 +75,15 @@ namespace HealbotConfigurator2
       MinCure = 3;
       MinCuraga = 2;
       FollowDistance = 3;
+      
       WaitForTp = 1000;
+      WeaponskillHpOperator = " > ";
       WeaponskillHpPercent = 1;
-
+      
       FollowPlayer = string.Empty;
       AssistPlayer = string.Empty;
       SpamSpell = string.Empty;
       Weaponskill = string.Empty;
-      WeaponskillHpOperator = ">";
       WaitForPlayer = string.Empty;
 
       Buffs = new List<string>();
