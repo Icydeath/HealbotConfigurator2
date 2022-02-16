@@ -10,7 +10,7 @@ Uses the [EliteMMO API](http://www.elitemmonetwork.com/forums/) to populate vari
 * Make sure to set your Windower4 folder path.
 * Make sure you have the latest [EliteMMO .dll's](http://www.elitemmonetwork.com/forums/) 
 
-## Download can be found here: [Releases](https://github.com/Icydeath/HealbotConfigurator/releases)
+## Download can be found here: [Releases](https://github.com/Icydeath/HealbotConfigurator2/releases)
 
 
 
