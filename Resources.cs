@@ -88,8 +88,9 @@ namespace HealbotConfigurator2
           && (string)d.Table["type"] != "SummonerPact"
           && (string)d.Table["type"] != "Trust"
           && _EliteAPI.Player.HasSpell(uint.Parse(d.Table["id"].ToString()))
-          && (((Table)d.Table["levels"])[MainJobId] != null && (double)((Table)d.Table["levels"])[MainJobId] <= MainJobLevel ||
-               ((Table)d.Table["levels"])[SubJobId] != null && (double)((Table)d.Table["levels"])[SubJobId] <= SubJobLevel)))
+          //&& (((Table)d.Table["levels"])[MainJobId] != null && (double)((Table)d.Table["levels"])[MainJobId] <= MainJobLevel ||
+          //     ((Table)d.Table["levels"])[SubJobId] != null && (double)((Table)d.Table["levels"])[SubJobId] <= SubJobLevel)
+          ))
       {
         Spells.Add(new ResourceItem((double)dv.Table["id"], (string)dv.Table["en"]));
 
